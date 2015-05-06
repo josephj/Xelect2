@@ -1,0 +1,37 @@
+/*
+Error: Invalid CSS after "...fect-scrollbar'": expected selector or at-rule, was "@import url(//f..."
+        on line 2 of select2-overwrite.scss
+
+1: @import 'perfect-scrollbar'
+2: @import url(//fonts.googleapis.com/css?family=Montserrat:700,400|Open+Sans:300italic,400italic,700italic,700,300,400);
+3: 
+4: body {
+5:   color: #333;
+6:   font-family: 'Open Sans', sans-serif;
+7: }
+
+Backtrace:
+select2-overwrite.scss:2
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/scss/parser.rb:1165:in `expected'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/scss/parser.rb:1101:in `expected'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/scss/parser.rb:43:in `parse'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/engine.rb:393:in `_to_tree'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/engine.rb:368:in `_render_with_sourcemap'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/engine.rb:285:in `render_with_sourcemap'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/plugin/compiler.rb:490:in `update_stylesheet'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/plugin/compiler.rb:215:in `block in update_stylesheets'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/plugin/compiler.rb:209:in `each'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/plugin/compiler.rb:209:in `update_stylesheets'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/plugin/compiler.rb:470:in `on_file_changed'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/sass-3.4.11/lib/sass/plugin/compiler.rb:328:in `block in watch'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/listen-2.8.5/lib/listen/listener.rb:282:in `call'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/listen-2.8.5/lib/listen/listener.rb:282:in `_process_changes'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/listen-2.8.5/lib/listen/listener.rb:246:in `block in _wait_for_changes'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/listen-2.8.5/lib/listen/listener.rb:229:in `loop'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/listen-2.8.5/lib/listen/listener.rb:229:in `_wait_for_changes'
+/Users/josephj/.rvm/gems/ruby-2.0.0-p353/gems/listen-2.8.5/lib/listen/listener.rb:318:in `block in _start_wait_thread'
+*/
+body:before {
+  white-space: pre;
+  font-family: monospace;
+  content: "Error: Invalid CSS after \"...fect-scrollbar'\": expected selector or at-rule, was \"@import url(//f...\"\A         on line 2 of select2-overwrite.scss\A \A 1: @import 'perfect-scrollbar'\A 2: @import url(//fonts.googleapis.com/css?family=Montserrat:700,400|Open+Sans:300italic,400italic,700italic,700,300,400);\A 3: \A 4: body {\A 5:   color: #333;\A 6:   font-family: 'Open Sans', sans-serif;\A 7: }"; }

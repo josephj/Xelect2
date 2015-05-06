@@ -1,0 +1,32 @@
+//====================
+// Perfect Scrollbar
+//====================
+.ps-container {
+    overflow: hidden;
+    .ps-in-scrolling {
+        pointer-events: none;
+    }
+    .ps-scrollbar-y,
+    .ps-scrollbar-y-rail {
+        border-radius: 4px;
+        position: absolute;
+        opacity: 0.7;
+        transition: opacity .2s linear;
+    }
+    .ps-scrollbar-y-rail {
+        background: #e6e6e6;
+        margin: 0 2px 4px 0;
+        right: 4px;
+        width: 8px;
+    }
+    .ps-scrollbar-y {
+        background: #666;
+        right: 1;
+        width: 8px;
+    }
+    &:hover .ps-scrollbar-y-rail,
+    &:hover .ps-scrollbar-y {
+        opacity: 1;
+    }
+}
+

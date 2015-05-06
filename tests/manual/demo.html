@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="author" content="Joseph">
+<meta name="created" content="2015-04-21">
+<title>Prototype</title>
+<link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap.min.css">
+<link href="./bower_components/select2/dist/css/select2.min.css" rel="stylesheet" />
+<script src="./bower_components/jquery/dist/jquery.min.js"></script>
+<script src="./bower_components/select2/dist/js/select2.full.min.js"></script>
+<style>
+body {padding: 10px;}
+select {width: 200px;}
+</style>
+</head>
+<body>
+    <h1>Select2 Playground</h1>
+
+    <section>
+        <h2>Basic</h2>
+        <select id="example-basic">
+            <option>Hello World!</option>
+            <option>Hello World! 2</option>
+        </select>
+        <script>$('#example-basic').select2();</script>
+    </section>
+
+    <section>
+        <h2>Multiple</h2>
+        <select id="example-multiple" multiple>
+            <option>Taipei</option>
+            <option>Taichung</option>
+            <option>Kaohsiung</option>
+        </select>
+        <script>$('#example-multiple').select2();</script>
+    </section>
+
+    <section>
+        <h2>Placeholder</h2>
+        <select id="example-placeholder" multiple placeholder="Select a city">
+            <option>Taipei</option>
+            <option>Taichung</option>
+            <option>Kaohsiung</option>
+        </select>
+        <script>$('#example-placeholder').select2({placeholder: 'Select a city'});</script>
+    </section>
+
+    <section>
+        <h2>Templating</h2>
+        <select id="example-templating" placeholder="Select a city">
+            <option>Taipei</option>
+            <option>Taichung</option>
+            <option>Kaohsiung</option>
+        </select>
+        <script>
+        $('#example-templating').select2({
+            templateResult: function (option) {
+                var $city = [
+                    '<label>',
+                    '    <input type="checkbox"> ' + option.text,
+                    '</label>'
+                ].join('');
+                return $($city);
+            }
+        });
+        </script>
+    </section>
+
+    <section>
+        <h2>Array Data</h2>
+        <select id="example-array" placeholder="Select a city">
+            <option value="2" selected>duplicate</option>
+        </select>
+        <script>
+        var data = [
+            {id: 0, text: 'enhancement'},
+            {id: 1, text: 'bug'},
+            {id: 2, text: 'duplicate'},
+            {id: 3, text: 'invalid'},
+            {id: 4, text: 'wontfix'}
+        ];
+        $('#example-array').select2({data: data});
+        </script>
+    </section>
+
+    <section>
+        <h2>Loading Remote Data</h2>
+        <select id="example-remote">
+            <option value="3620194" selected="selected">select2/select2</option>
+        </select>
+        <script>
+        $('#example-remote').select2({
+            ajax: {
+                url: 'https://api.github.com/search/repositories',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        q: params.term,
+                        page: params.page
+                    };
+                },
+                cache: true
+            },
+            escapeMarkup: function (markup) {
+                return markup; // let our custom formatter work
+            },
+            minimumInputLength: 1,
+            templateResult: function (repo) {
+                return repo.full_name || repo.text;
+            },
+            templateSelection: function (repo) {
+                return repo.full_name || repo.text;
+            }
+        });
+        </script>
+    </section>
+
+    <section>
+        <h2>Disabled Options</h2>
+        <select id="example-disable">
+            <option value="one">First</option>
+            <option value="two" disabled="disabled">Second (disabled)</option>
+            <option value="three">Third</option>
+        </select>
+        <script>
+        $('#example-disable').select2();
+        </script>
+    </section>
+
+    <section>
+        <h2>Programmatic Access</h2>
+        <select id="example-programmatic">
+            <option>Taipei</option>
+            <option>Taichung</option>
+            <option>Kaohsiung</option>
+        </select>
+        <button class="btn-action btn btn-danger">Init</button>
+        <button class="btn-action btn btn-danger">Destroy</button>
+        <button class="btn-action btn btn-success">Open</button>
+        <button class="btn-action btn btn-success">Close</button>
+        <button class="btn-action btn btn-primary">Choose</button>
+        <script>
+        (function () {
+            var $select = $('#example-programmatic');
+            $('.btn-action').on('click', function (e) {
+                e.preventDefault();
+                var $button = $(e.currentTarget),
+                    type = $button.html().toLowerCase();
+
+                switch (type) {
+                case 'init':
+                    $select.select2();
+                    break;
+                case 'destroy':
+                    $select.select2('destroy');
+                    break;
+                case 'open':
+                    $select.select2('open');
+                    break;
+                case 'close':
+                    $select.select2('close');
+                    break;
+                case 'choose':
+                    $select.val('Taichung').trigger('change');
+                    break;
+                }
+            });
+            $select
+                .on('select2:open', function (e) { console.log('select2:open', e); })
+                .on('select2:close', function (e) { console.log('select2:close', e); })
+                .on('select2:select', function (e) { console.log('select2:select', e); })
+                .on('select2:unselect', function (e) { console.log('select2:unselect', e); })
+                .on('change', function (e) { console.log('change'); });
+        }());
+        </script>
+    </section>
+
+    <section>
+        <h2>Hide Search Box</h2>
+        <select id="example-hide-search" multiple>
+            <option>Taipei</option>
+            <option>Taichung</option>
+            <option>Kaohsiung</option>
+        </select>
+        <script>$('#example-hide-search').select2({minimumResultsForSearch: 1});</script>
+    </section>
+
+    <section>
+        <h2>Custom Matcher</h2>
+        <select id="example-matcher">
+            <option>Taipei</option>
+            <option>Taichung</option>
+            <option>Kaohsiung</option>
+        </select>
+        <script>
+        var matchStart = function (term, text) {
+            if (text.toLowerCase().indexOf(term.toLowerCase()) === 0) {
+                return true;
+            }
+        };
+        $.fn.select2.amd.require(['select2/compat/matcher'], function (matcher) {
+            $('#example-matcher').select2({
+                matcher: matcher(matchStart)
+            });
+        });
+        </script>
+    </section>
+
+    <section>
+        <h2>Overwrite Multiple Selection</h2>
+        <select id="example-selection-adapter" multiple>
+            <option selected>Taipei</option>
+            <option selected>Taichung</option>
+            <option selected>Kaohsiung</option>
+            <option selected>Yilan</option>
+            <option selected>Chunghwa</option>
+        </select>
+        <script>
+        $.fn.select2.amd.require([
+            'select2/selection/multiple',
+            'select2/utils',
+            'select2/dropdown',
+            'select2/dropdown/search',
+            'select2/dropdown/attachBody'
+        ], function (MultipleSelection, Utils, Dropdown, DropdownSearch, AttachBody) {
+
+            //===============
+            // Selection
+            //===============
+            function CustomSelection($element, options) {
+                CustomSelection.__super__.constructor.call(this, $element, options);
+            }
+
+            Utils.Extend(CustomSelection, MultipleSelection);
+
+            CustomSelection.prototype.update = function (data) {
+                var html = [],
+                    i;
+
+                this.clear();
+
+                if (data.length === 0) {
+                  return;
+                }
+
+                for (i in data) {
+                    if (data.hasOwnProperty(i)) {
+                        html.push(data[i].text);
+                    }
+                }
+
+                this.$selection.find('.select2-selection__rendered').append(html.join(', '));
+            };
+
+            //===============
+            // Search
+            //===============
+            var SearchableDropdown = Utils.Decorate(Dropdown, DropdownSearch);
+            SearchableDropdown = Utils.Decorate(SearchableDropdown, AttachBody);
+
+            //===============
+            // Options
+            //===============
+
+            $('#example-selection-adapter').select2({
+                selectionAdapter: CustomSelection,
+                dropdownAdapter: SearchableDropdown,
+                templateResult: function (option) {
+                    var selected = (option.selected) ? ' checked' : '',
+                        $option;
+                    $option = [
+                        '<label>',
+                        '    <input type="checkbox"' + selected + '> ' + option.text,
+                        '</label>'
+                    ].join('');
+                    return $($option);
+                }
+            });
+
+        });
+        </script>
+    </section>
+
+
+</body>
+</html>

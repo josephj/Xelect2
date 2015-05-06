@@ -1,5 +1,11 @@
 /*global grunt*/
 module.exports = function (grunt) {
+
+    require("matchdep").filterAll("grunt-*").forEach(grunt.loadNpmTasks);
+
+    var webpack = require('webpack'),
+        webpackConfig = require('./webpack.config.js');
+
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         dirs: {
@@ -86,32 +92,45 @@ module.exports = function (grunt) {
             }
         },
         webpack: {
+            options: webpackConfig,
+            build: {
+                plugins: webpackConfig.plugins.concat(
+                    new webpack.DefinePlugin({
+                        "process.env": {
+                            "NODE_ENV": JSON.stringify('production')
+                        }
+                    }),
+                    new webpack.optimize.DedupePlugin(),
+                    new webpack.optimize.UglifyJsPlugin()
+                )
+            },
             main: {
-                entry: '<%= dirs.js %>xelect2.js',
-                output: {
-                    path: '<%= dirs.dist %>',
-                    filename: 'xelect2.js'
+                devtool: "sourcemap",
+                debug: true
+            }
+        },
+        "webpack-dev-server": {
+            options: {
+                webpack: webpackConfig,
+                publicPath: "/" + webpackConfig.output.publicPath
+            },
+            start: {
+                keepAlive: true,
+                webpack: {
+                    devtool: "eval",
+                    debug: true
                 }
             }
         }
     });
-    grunt.loadNpmTasks('grunt-autoprefixer');
-    grunt.loadNpmTasks('grunt-contrib-connect');
-    grunt.loadNpmTasks('grunt-contrib-cssmin');
-    grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-jscs');
-    grunt.loadNpmTasks('grunt-sass');
-    grunt.loadNpmTasks('grunt-webpack');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-watch');
 
     grunt.registerTask('build', [
         'sass',
         'autoprefixer',
         'cssmin',
-        'webpack',
+        'webpack:build',
         'uglify'
     ]);
 
-    grunt.registerTask('default', ['build', 'connect', 'watch']);
+    grunt.registerTask('default', ['webpack:main', 'connect', 'watch']);
 };

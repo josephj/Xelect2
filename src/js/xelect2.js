@@ -1,15 +1,51 @@
+/* jshint maxparams:7 */
+
 'use strict';
 
+var $ = require('jquery'),
+    Ps = require('perfect-scrollbar');
+
+require('select2');
+
 $.fn.select2.amd.require([
+    'select2/data/array',
     'select2/selection/multiple',
     'select2/utils',
     'select2/dropdown',
     'select2/dropdown/search',
     'select2/dropdown/attachBody',
     'select2/results'
-], function (MultipleSelection, Utils, Dropdown, DropdownSearch, AttachBody, Results) {
+], function (ArrayData, MultipleSelection, Utils, Dropdown, DropdownSearch, AttachBody, Results) {
 
-    var proto;
+    var data = [];
+
+    //===============
+    // Data
+    //===============
+    function CustomData ($element, options) {
+        CustomData.__super__.constructor.call(this, $element, options);
+    }
+
+    Utils.Extend(CustomData, ArrayData);
+
+    CustomData.prototype.query = function (params, callback) {
+        var matchData = {results: []},
+            i;
+        if (!params.term || params.term.length < 2) {
+            return;
+        }
+        for (i in data) {
+            if (data.hasOwnProperty(i)) {
+                if (data[i].text.toLowerCase().indexOf(params.term.toLowerCase()) !== -1) {
+                    matchData.results.push(data[i]);
+                }
+            }
+        }
+        if (matchData.results.length) {
+            callback(matchData);
+        }
+    };
+
 
     //===============
     // Selection
@@ -21,6 +57,8 @@ $.fn.select2.amd.require([
     Utils.Extend(CustomSelection, MultipleSelection);
 
     $.extend(CustomSelection.prototype, {
+
+        // Add arrow-down icon
         render: function () {
             var $selection = MultipleSelection.__super__.render.call(this);
             $selection.addClass('select2-selection--multiple');
@@ -30,6 +68,10 @@ $.fn.select2.amd.require([
             ].join(''));
             return $selection;
         },
+
+        // 1. Show placeholder text when it's empty
+        // 2. Show text with the following format:
+        //    "Option1, Option2, Option3 + n More..."
         update: function (data) {
             var that = this,
                 html = [],
@@ -38,13 +80,14 @@ $.fn.select2.amd.require([
                 maxWidth = $text.outerWidth(),
                 currentWidth = 0,
                 removes = [],
-                i;
+                i, textEl;
 
             that.clear();
 
             if (data.length === 0) {
+                // TODO - Need to be configurable
                 $text.html('Add Tags');
-                $container.addClass('select2-selection__rendered--empty');
+                $selection.addClass('select2-selection__rendered--empty');
                 return;
             }
 
@@ -55,12 +98,16 @@ $.fn.select2.amd.require([
             }
 
             $text.html(html.join(', '));
-            currentWidth = $text[0].scrollWidth;
 
-            while (html.length && currentWidth > maxWidth) {
-                removes.push(html.pop());
-                $text.html(html.join(', ') + ' + ' + removes.length.toString() + ' More...');
-                currentWidth = $text[0].scrollWidth;
+            if (html.length > 1) {
+                textEl = $text[0];
+                currentWidth = textEl.scrollWidth;
+
+                while (html.length && currentWidth > maxWidth) {
+                    removes.push(html.pop());
+                    $text.html(html.join(', ') + ' + ' + removes.length.toString() + ' More...');
+                    currentWidth = textEl.scrollWidth;
+                }
             }
         }
     });
@@ -68,10 +115,15 @@ $.fn.select2.amd.require([
     //===============
     // Search
     //===============
-    DropdownSearch.prototype.render = function (decorated) {
-        var $rendered = decorated.call(this);
+    var SearchableDropdown;
 
-        var $search = $(
+    // Add placeholder to search input textbox
+    DropdownSearch.prototype.render = function (decorated) {
+        var that = this,
+            $search,
+            $rendered = decorated.call(that);
+
+        $search = $(
           '<span class="select2-search select2-search--dropdown">' +
             '<input class="select2-search__field" type="search" tabindex="-1"' +
             ' autocomplete="off" autocorrect="off" autocapitalize="off"' +
@@ -80,16 +132,14 @@ $.fn.select2.amd.require([
           '</span>'
         );
 
-        this.$searchContainer = $search;
-        this.$search = $search.find('input');
+        that.$searchContainer = $search;
+        that.$search = $search.find('input');
 
         $rendered.prepend($search);
 
         return $rendered;
     };
-
-    var SearchableDropdown = Utils.Decorate(Dropdown, DropdownSearch);
-
+    SearchableDropdown = Utils.Decorate(Dropdown, DropdownSearch);
     SearchableDropdown = Utils.Decorate(SearchableDropdown, AttachBody);
 
     //===============
@@ -100,65 +150,74 @@ $.fn.select2.amd.require([
     }
     Utils.Extend(CustomResults, Results);
 
-    CustomResults.prototype.append = function (data) {
-        this.hideLoading();
+    $.extend(CustomResults.prototype, {
 
-        var $options = [];
+        // Apply PerfectScroll
+        append: function (data) {
+            var that = this,
+                $options = [],
+                d, item, $option;
 
-        if (data.results == null || data.results.length === 0) {
-            if (this.$results.children().length === 0) {
-                this.trigger('results:message', {
-                    message: 'noResults'
-                });
+            that.hideLoading();
+
+            if (data.results === null || data.results.length === 0) {
+                if (that.$results.children().length === 0) {
+                    that.trigger('results:message', {
+                        message: 'noResults'
+                    });
+                }
+                return;
             }
-            return;
+
+            data.results = that.sort(data.results);
+
+            for (d = 0; d < data.results.length; d++) {
+                item = data.results[d];
+                $option = that.option(item);
+                $options.push($option);
+            }
+
+            that.$results.append($options);
+
+            // Apply PerfectScroll
+            Ps.initialize(that.$results[0]);
+        },
+
+        // Add link when search doesn't match anything
+        displayMessage: function (params) {
+            var that = this,
+                $message,
+                message,
+                msg;
+
+            that.clear();
+            that.hideLoading();
+
+            $message = $('<li role="treeitem" class="select2-results__option"></li>');
+
+            message = that.options.get('translations').get(params.message);
+            msg = message(params.args);
+
+            // Add 'Add New' link
+            if (params.message === 'noResults') {
+                // TODO - Still needs to bind an event and provide callback
+                msg += ', <a href="javascript:void(0);" class="select2-results__add">Add New?</a>';
+                $message.addClass('select2-results__option--noresult');
+            }
+
+            $message.append(msg);
+            that.$results.append($message);
         }
-
-        data.results = this.sort(data.results);
-
-        for (var d = 0; d < data.results.length; d++) {
-            var item = data.results[d];
-            var $option = this.option(item);
-            $options.push($option);
-        }
-
-        this.$results.append($options);
-        Ps.initialize(this.$results[0]);
-
-
-    };
-
-    Results.prototype.displayMessage = function (params) {
-        var escapeMarkup = this.options.get('escapeMarkup');
-
-        this.clear();
-        this.hideLoading();
-
-        var $message = $(
-            '<li role="treeitem" class="select2-results__option"></li>'
-        );
-
-        var message = this.options.get('translations').get(params.message);
-        var msg = message(params.args);
-        if (params.message === 'noResults') {
-            msg += ', <a href="javascript:void(0);" class="select2-results__add">Add New?</a>';
-            $message.addClass('select2-results__option--noresult');
-        }
-
-        $message.append(msg);
-
-        this.$results.append($message);
-
-    };
+    });
 
     //===============
     // Options
     //===============
     $('#example-selection-adapter').select2({
         selectionAdapter: CustomSelection,
+        //dataAdapter: CustomData,
         dropdownAdapter: SearchableDropdown,
         resultsAdapter: CustomResults,
-        placeholder: 'Add Tags',
         templateResult: function (option) {
             var html = [
                 '<label>',
